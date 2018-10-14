@@ -30,7 +30,7 @@ public class ServerThread extends Thread {
         {
             ie.printStackTrace();
         }
-        while(true)//Accept() to create server socket for every request
+        while(true)
         {
             try{
                 socket=serverSocket.accept();
@@ -83,10 +83,9 @@ class Download extends Thread
             ObjectOutputStream oos=new ObjectOutputStream(os);
             boolean peerduplicate;
 
-            MF=(MessageFormat)ois.readObject();					//reading the serialized PeerMessageID class
+            MF=(MessageFormat)ois.readObject();
 
             System.out.println("got request from "+MF.fromPeerId);
-            //System.out.println("size of arraylist "+peermsg.size());
 
             peerduplicate=this.peermsg.contains(MF.msgId);
             if(peerduplicate==false)
@@ -100,9 +99,6 @@ class Download extends Thread
 
             fname=MF.fname;
             System.out.println("Found: "+fname);
-            //System.out.println(p.peeridsearched);
-            //System.out.println("message id value "+p.message_id);
-            //System.out.println("bool value "+peerduplicate);
 
             if(!peerduplicate)
             {
@@ -128,12 +124,11 @@ class Download extends Thread
                 String temp=prop.getProperty("peer"+peer_id+".next");
                 if(temp!=null && MF.TTL_value>0)
                 {
-                    //System.out.println("entered inside the loop");
                     String[] neighbours=temp.split(",");
 
                     for(int i=0;i<neighbours.length;i++)
                     {
-                        if(MF.fromPeerId==Integer.parseInt(neighbours[i]))	//creat client thread for all neighbouring peers
+                        if(MF.fromPeerId==Integer.parseInt(neighbours[i]))
                         {
                             continue;
                         }
@@ -149,7 +144,6 @@ class Download extends Thread
 
                     }
                 }
-                //oos.writeObject(p);
                 for(int i=0;i<thread.size();i++)
                 {
                     ((Thread) thread.get(i)).join();

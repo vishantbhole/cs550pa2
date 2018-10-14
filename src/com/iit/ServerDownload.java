@@ -18,7 +18,6 @@ public class ServerDownload extends Thread{
     {
         try{
             serverSocket=new ServerSocket(portno);
-            //System.out.println("thread for download waiting");
         }
         catch(IOException io)
         {
@@ -53,11 +52,11 @@ class Downloading extends Thread
     {
         try{
 
-            InputStream is=socket.getInputStream();		    //Connecting Client acting as a server to the file requesting Client
+            InputStream is=socket.getInputStream();
             ObjectInputStream ois=new ObjectInputStream(is);
             OutputStream os=socket.getOutputStream();
             ObjectOutputStream oos=new ObjectOutputStream(os);
-            filename=(String)ois.readObject();					//Fileaname to be downloaded
+            filename=(String)ois.readObject();
             String FileLocation;
             if(filename.startsWith("Invalied File"))
             {
@@ -67,14 +66,13 @@ class Downloading extends Thread
             {
                 while(true)
                 {
-                    File myFile = new File(sharedDirectory+"//"+filename);
+                    File myFile = new File(sharedDirectory+"/"+filename);
                     long length = myFile.length();
-                    byte [] mybytearray = new byte[(int)length];		//Sending file length of the file to be downloaded to the client
+                    byte [] mybytearray = new byte[(int)length];
                     oos.writeObject((int)myFile.length());
                     oos.flush();
                     FileInputStream fileInSt=new FileInputStream(myFile);
                     BufferedInputStream objBufInStream = new BufferedInputStream(fileInSt);
-                    //transferring the contents of the file as stream of bytes
                     objBufInStream.read(mybytearray,0,(int)myFile.length());
                     System.out.println("sending file of " +mybytearray.length+ " bytes");
                     oos.write(mybytearray,0,mybytearray.length);
