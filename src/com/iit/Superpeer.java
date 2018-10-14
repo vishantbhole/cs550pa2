@@ -130,7 +130,7 @@ class Download extends Thread
                         int connectingport=Integer.parseInt(prop.getProperty("peer"+neighbours[i]+".port"));
                         int neighbouringpeer=Integer.parseInt(neighbours[i]);
 
-                        System.out.println(" File sent to "+neighbouringpeer);
+                        System.out.println("Query forwarded to "+neighbouringpeer);
                         LeafNode cp=new LeafNode(connectingport,neighbouringpeer,fname,MF.message_ID,peer_id,MF.ttl--);
                         Thread t=new Thread(cp);
                         t.start();
