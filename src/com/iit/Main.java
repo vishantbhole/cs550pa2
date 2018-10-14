@@ -148,9 +148,9 @@ public class Main {
 
             int peer_id = Integer.parseInt(args[1]);
             sharedDir = args[2];
-            System.out.println("Super-peer " + peer_id + " stated with private storage " + sharedDir + " Topology: " + fileName);
-            Properties prop = new Properties();                        //Properties class to read the configuration file
+            Properties prop = new Properties();
             fileName = args[0];
+            System.out.println("Super-peer " + peer_id + " stated with private storage " + sharedDir + " Topology: " + fileName);
             InputStream is = new FileInputStream(fileName);
             prop.load(is);
             ports = Integer.parseInt(prop.getProperty("peer" + peer_id + ".serverport"));
@@ -181,7 +181,7 @@ public class Main {
                     e.printStackTrace();
                 }
             }
-            int[] peerswithfiles;//part on how to send data from the ConnectingPeer
+            int[] peerswithfiles;
 
             System.out.println("Leafnodes containing the file are: ");
             int peerfromdownload = 0;
@@ -221,17 +221,6 @@ public class Main {
 
             System.out.println(filename + " file is transferred to your private storage: " + sharedDir);
             //myByteArray.flush();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void BroadcastInvaliedMsg(int cspeerid, int csportno, String filename) {
-        try {
-            Socket clientasserversocket = new Socket("localhost", csportno);
-            ObjectOutputStream ooos = new ObjectOutputStream(clientasserversocket.getOutputStream());
-            ooos.flush();
-            ooos.writeObject("Invalied File " + filename);
         } catch (Exception e) {
             e.printStackTrace();
         }
