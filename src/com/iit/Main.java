@@ -94,7 +94,7 @@ public class Main {
 
             int peer_id = Integer.parseInt(args[1]);
             sharedDir = args[2];
-            System.out.println("Peer " + peer_id + " stated with shared directory " + sharedDir);
+            System.out.println("Leafnode " + peer_id + " stated with private storage " + sharedDir);
             Properties prop = new Properties();                        //Properties class to read the configuration file
             fileName = args[0];
             System.out.println("Selected the " + fileName);
@@ -131,7 +131,7 @@ public class Main {
             }
             int[] peerswithfiles;//part on how to send data from the ConnectingPeer
 
-            System.out.println("Peers containing the file are: ");
+            System.out.println("Leafnodes containing the file are: ");
             int peerfromdownload = 0;
             for (int i = 0; i < peers.size(); i++) {
                 peerswithfiles = ((LeafNode) peers.get(i)).getarray();
@@ -142,10 +142,10 @@ public class Main {
                     peerfromdownload = peerswithfiles[j];
                 }
             }
-            System.out.println("\n Selecting " + peerfromdownload + " To download file \n");
+            System.out.println("\n Selecting leafnode: " + peerfromdownload + " To download file \n");
             int porttodownload = Integer.parseInt(prop.getProperty("peer" + peerfromdownload + ".serverport"));
             ClientasServer(peerfromdownload, porttodownload, f_name, sharedDir);
-            System.out.println("File: " + f_name + " downloaded from Peer " + peerfromdownload + " to Peer " + peer_id);
+            System.out.println("File: " + f_name + " downloaded from Leafnode: " + peerfromdownload + " to Leafnode:" + peer_id);
         } catch (IOException io) {
             io.printStackTrace();
         }
@@ -167,7 +167,7 @@ public class Main {
             fos.write(myByteArray);
             fos.close();
 
-            System.out.println(filename + " file has be downloaded to your directory " + sharedDir);
+            System.out.println(filename + " file is transferred to your private storage: " + sharedDir);
             //myByteArray.flush();
         } catch (Exception e) {
             e.printStackTrace();

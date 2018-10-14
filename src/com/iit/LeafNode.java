@@ -29,14 +29,12 @@ public class LeafNode extends Thread {
     public void run()
     {
         try{
-            //System.out.println("got the request ");
             socket=new Socket("localhost",portofconnection);
-            //socket=new Socket("localhost",4001);
             OutputStream os=socket.getOutputStream();
             ObjectOutputStream oos=new ObjectOutputStream(os);
             InputStream is=socket.getInputStream();
             ObjectInputStream ois=new ObjectInputStream(is);
-            MF.file_name =filetodownload;							//writing the data to be serialized and send to the server thread
+            MF.file_name =filetodownload;
             MF.message_ID =msgid;
             MF.fromPeerId=frompeer_id;
             MF.ttl =TTL_value;

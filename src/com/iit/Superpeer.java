@@ -1,5 +1,4 @@
 package com.iit;
-
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ public class Superpeer extends Thread {
         {
             try{
                 socket=serverSocket.accept();
-                System.out.println("Connected to client at "+socket.getRemoteSocketAddress()+" with peer "+peer_id);
+                System.out.println("Superpeer connected to Leafnode: " + peer_id + ", at "+socket.getRemoteSocketAddress());
                 new Download(socket,FileDir,peer_id,msg).start();
             }
             catch(IOException io)
@@ -53,7 +52,6 @@ class Download extends Thread
     int port;
     String fname;
     int peer_id;
-    //Peer p=new Peer();
     ArrayList<String> peermsg;
     ArrayList<Thread> thread=new ArrayList<Thread>();
     ArrayList<LeafNode> peerswithfiles=new ArrayList<LeafNode>();
@@ -75,7 +73,7 @@ class Download extends Thread
     public void run()
     {
         try{
-            System.out.println("server thread for peer"+peer_id);
+            System.out.println("Leaf node peer"+peer_id);
 
             InputStream is=socket.getInputStream();
             ObjectInputStream ois=new ObjectInputStream(is);
@@ -85,7 +83,7 @@ class Download extends Thread
 
             MF=(MessageFormat)ois.readObject();
 
-            System.out.println("got request from "+MF.fromPeerId);
+            System.out.println("Received query from "+MF.fromPeerId);
 
             peerduplicate=this.peermsg.contains(MF.message_ID);
             if(peerduplicate==false)
@@ -94,11 +92,11 @@ class Download extends Thread
             }
             else
             {
-                System.out.println("duplicate");
+                System.out.println("Recieved Same query before.");
             }
 
             fname=MF.file_name;
-            System.out.println("Found: "+fname);
+            System.out.println("queryhit: "+fname);
 
             if(!peerduplicate)
             {
@@ -114,7 +112,7 @@ class Download extends Thread
                         break;
                     }
                 }
-                System.out.println("Local Search Completed");
+                System.out.println("Msg from Superpeer: Search in Leafnode completed");
                 Properties prop = new Properties();
                 Main M=new Main();
                 String fileName = M.fileName;
@@ -134,7 +132,7 @@ class Download extends Thread
                         int connectingport=Integer.parseInt(prop.getProperty("peer"+neighbours[i]+".port"));
                         int neighbouringpeer=Integer.parseInt(neighbours[i]);
 
-                        System.out.println("sending to "+neighbouringpeer);
+                        System.out.println(" File sent to "+neighbouringpeer);
                         LeafNode cp=new LeafNode(connectingport,neighbouringpeer,fname,MF.message_ID,peer_id,MF.ttl--);
                         Thread t=new Thread(cp);
                         t.start();
