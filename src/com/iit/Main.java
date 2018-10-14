@@ -44,7 +44,7 @@ public class Main {
             ServerThread cs=new ServerThread(portserver,sharedDir,peer_id);
             cs.start();
             //System.out.println("started "+portserver);
-            System.out.println("\n     EEnter \n\t1 To download a file\n \t2 to Broadcast a invalied message\n");
+            System.out.println("\n E.txtEEnter \n\t1 To download a file\n \t2 to Broadcast a invalied message\n");
             int ch=scan.nextInt();
             scan.nextLine();
             if(ch==1)
