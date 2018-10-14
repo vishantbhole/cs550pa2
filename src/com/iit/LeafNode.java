@@ -4,7 +4,7 @@ import java.net.Socket;
 import java.io.IOException;
 import java.io.*;
 
-public class ClientThread extends Thread {
+public class LeafNode extends Thread {
 
     int portofconnection;
     int peertoconnect;
@@ -16,7 +16,7 @@ public class ClientThread extends Thread {
     int frompeer_id;
     int TTL_value;
 
-    public ClientThread(int portofconnection,int peertoconnect,String filetodownload,String msgid,int frompeer_id,int TTL_value)
+    public LeafNode(int portofconnection, int peertoconnect, String filetodownload, String msgid, int frompeer_id, int TTL_value)
     {
         this.portofconnection=portofconnection;
         this.peertoconnect=peertoconnect;

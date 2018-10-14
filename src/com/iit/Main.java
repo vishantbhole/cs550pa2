@@ -18,7 +18,7 @@ public class Main {
             String msgid;
             String sharedDir;
             ArrayList<Thread> thread = new ArrayList<Thread>();
-            ArrayList<ClientThread> peers = new ArrayList<ClientThread>();
+            ArrayList<LeafNode> peers = new ArrayList<LeafNode>();
 
             int peer_id = Integer.parseInt(args[1]);
             sharedDir = args[2];
@@ -32,7 +32,7 @@ public class Main {
             ServerDownload sd = new ServerDownload(ports, sharedDir);
             sd.start();
             portserver = Integer.parseInt(prop.getProperty("peer" + peer_id + ".port"));
-            ServerThread cs = new ServerThread(portserver, sharedDir, peer_id);
+            Superpeer cs = new Superpeer(portserver, sharedDir, peer_id);
             cs.start();
             System.out.println("Enter the filename to download a file");
             String f_name = new Scanner(System.in).nextLine();
@@ -43,7 +43,7 @@ public class Main {
             for (int i = 0; i < neighbours.length; i++) {
                 int connectingport = Integer.parseInt(prop.getProperty("peer" + neighbours[i] + ".port"));
                 int neighbouringpeer = Integer.parseInt(neighbours[i]);
-                ClientThread cp = new ClientThread(connectingport, neighbouringpeer, f_name, msgid, peer_id, ttl);
+                LeafNode cp = new LeafNode(connectingport, neighbouringpeer, f_name, msgid, peer_id, ttl);
                 Thread t = new Thread(cp);
                 t.start();
                 thread.add(t);
@@ -62,7 +62,7 @@ public class Main {
             System.out.println("Peers containing the file are: ");
             int peerfromdownload = 0;
             for (int i = 0; i < peers.size(); i++) {
-                peerswithfiles = ((ClientThread) peers.get(i)).getarray();
+                peerswithfiles = ((LeafNode) peers.get(i)).getarray();
                 for (int j = 0; j < peerswithfiles.length; j++) {
                     if (peerswithfiles[j] == 0)
                         break;

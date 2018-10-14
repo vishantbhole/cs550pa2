@@ -5,14 +5,14 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.Properties;
 
-public class ServerThread extends Thread {
+public class Superpeer extends Thread {
     String FileDir;
     int port_no;
     ServerSocket serverSocket=null;
     Socket socket=null;
     int peer_id;
     static ArrayList<String> msg;
-    ServerThread(int port,String SharedDir,int peer_id)
+    Superpeer(int port, String SharedDir, int peer_id)
     {
         port_no=port;
         FileDir=SharedDir;
@@ -56,7 +56,7 @@ class Download extends Thread
     //Peer p=new Peer();
     ArrayList<String> peermsg;
     ArrayList<Thread> thread=new ArrayList<Thread>();
-    ArrayList<ClientThread> peerswithfiles=new ArrayList<ClientThread>();
+    ArrayList<LeafNode> peerswithfiles=new ArrayList<LeafNode>();
     int[] peersArray_list=new int[20];
     int[] a=new int[20];
     int countofpeers=0;
@@ -116,7 +116,6 @@ class Download extends Thread
                 }
                 System.out.println("Local Search Completed");
                 Properties prop = new Properties();
-                //String fileName = "startopology.txt";
                 Main M=new Main();
                 String fileName = M.fileName;
                 is = new FileInputStream(fileName);
@@ -136,7 +135,7 @@ class Download extends Thread
                         int neighbouringpeer=Integer.parseInt(neighbours[i]);
 
                         System.out.println("sending to "+neighbouringpeer);
-                        ClientThread cp=new ClientThread(connectingport,neighbouringpeer,fname,MF.msgId,peer_id,MF.TTL_value--);
+                        LeafNode cp=new LeafNode(connectingport,neighbouringpeer,fname,MF.msgId,peer_id,MF.TTL_value--);
                         Thread t=new Thread(cp);
                         t.start();
                         thread.add(t);
@@ -150,7 +149,7 @@ class Download extends Thread
                 }
                 for(int i=0;i<peerswithfiles.size();i++)
                 {
-                    a=((ClientThread)peerswithfiles.get(i)).getarray();
+                    a=((LeafNode)peerswithfiles.get(i)).getarray();
                     for(int j=0;j<a.length;j++)
                     {	if(a[j]==0)
                         break;
