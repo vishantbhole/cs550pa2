@@ -5,7 +5,7 @@ peer4.port=4003
 peer5.port=4004
 peer1.next=2
 peer2.next=3
-peer3.next=5
+peer3.next=4
 peer4.next=5
 peer5.next=1
 

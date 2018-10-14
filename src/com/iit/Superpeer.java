@@ -33,7 +33,7 @@ public class Superpeer extends Thread {
         {
             try{
                 socket=serverSocket.accept();
-                System.out.println("Superpeer connected to Leafnode: " + peer_id + ", at "+socket.getRemoteSocketAddress());
+                System.out.println("Superpeer: " + peer_id + ", started at "+socket.getRemoteSocketAddress());
                 new Download(socket,FileDir,peer_id,msg).start();
             }
             catch(IOException io)
@@ -73,8 +73,6 @@ class Download extends Thread
     public void run()
     {
         try{
-            System.out.println("Leaf node peer"+peer_id);
-
             InputStream is=socket.getInputStream();
             ObjectInputStream ois=new ObjectInputStream(is);
             OutputStream os=socket.getOutputStream();
