@@ -140,7 +140,8 @@ public class Main {
             System.out.println("bytes transferred: "+readbytes);
             byte[] b=new byte[readbytes];
             oois.readFully(b);
-            OutputStream fileos=new FileOutputStream(sharedDir+"//"+filename);
+            String outputFile = sharedDir+"/"+filename;
+            OutputStream fileos=new FileOutputStream(outputFile);
             BufferedOutputStream bos=new BufferedOutputStream(fileos);
             bos.write(b, 0,(int) readbytes);
             System.out.println(filename+" file has be downloaded to your directory "+sharedDir);
