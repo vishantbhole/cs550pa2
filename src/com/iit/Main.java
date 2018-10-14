@@ -5,6 +5,78 @@ import java.util.Properties;
 import java.io.*;
 import java.util.*;
 
+class FileDownloader extends Thread {
+
+    int portno;
+    String FileDirectory;
+    ServerSocket serverSocket;
+    Socket socket;
+
+    FileDownloader(int portno, String FileDirectory) {
+        this.portno = portno;
+        this.FileDirectory = FileDirectory;
+    }
+
+    public void run() {
+        try {
+            serverSocket = new ServerSocket(portno);
+        } catch (IOException io) {
+            io.printStackTrace();
+        }
+        try {
+            socket = serverSocket.accept();
+
+        } catch (IOException io) {
+            io.printStackTrace();
+        }
+        new DownloadProgress(socket, portno, FileDirectory).start();
+    }
+}
+
+class DownloadProgress extends Thread {
+
+    int portno;
+    String sharedDirectory;
+    Socket socket;
+    String filename;
+
+    DownloadProgress(Socket socket, int portno, String FileDir) {
+        this.socket = socket;
+        this.portno = portno;
+        this.sharedDirectory = FileDir;
+    }
+
+    public void run() {
+        try {
+
+            InputStream is = socket.getInputStream();
+            ObjectInputStream ois = new ObjectInputStream(is);
+            OutputStream os = socket.getOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(os);
+            filename = (String) ois.readObject();
+            String FileLocation;
+            if (filename.startsWith("Invalied File")) {
+                System.out.println(filename + "  Modified by server...");
+            } else {
+                while (true) {
+                    File myFile = new File(sharedDirectory + "/" + filename);
+                    long length = myFile.length();
+                    byte[] mybytearray = new byte[(int) length];
+                    oos.writeObject((int) myFile.length());
+                    oos.flush();
+                    FileInputStream fileInSt = new FileInputStream(myFile);
+                    BufferedInputStream objBufInStream = new BufferedInputStream(fileInSt);
+                    objBufInStream.read(mybytearray, 0, (int) myFile.length());
+                    System.out.println("sending file of " + mybytearray.length + " bytes");
+                    oos.write(mybytearray, 0, mybytearray.length);
+                    oos.flush();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
 
 public class Main {
     static String fileName;
@@ -29,7 +101,7 @@ public class Main {
             InputStream is = new FileInputStream(fileName);
             prop.load(is);
             ports = Integer.parseInt(prop.getProperty("peer" + peer_id + ".serverport"));
-            ServerDownload sd = new ServerDownload(ports, sharedDir);
+            FileDownloader sd = new FileDownloader(ports, sharedDir);
             sd.start();
             portserver = Integer.parseInt(prop.getProperty("peer" + peer_id + ".port"));
             Superpeer cs = new Superpeer(portserver, sharedDir, peer_id);

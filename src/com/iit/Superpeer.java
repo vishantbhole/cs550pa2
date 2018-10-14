@@ -87,17 +87,17 @@ class Download extends Thread
 
             System.out.println("got request from "+MF.fromPeerId);
 
-            peerduplicate=this.peermsg.contains(MF.msgId);
+            peerduplicate=this.peermsg.contains(MF.message_ID);
             if(peerduplicate==false)
             {
-                this.peermsg.add(MF.msgId);
+                this.peermsg.add(MF.message_ID);
             }
             else
             {
                 System.out.println("duplicate");
             }
 
-            fname=MF.fname;
+            fname=MF.file_name;
             System.out.println("Found: "+fname);
 
             if(!peerduplicate)
@@ -121,7 +121,7 @@ class Download extends Thread
                 is = new FileInputStream(fileName);
                 prop.load(is);
                 String temp=prop.getProperty("peer"+peer_id+".next");
-                if(temp!=null && MF.TTL_value>0)
+                if(temp!=null && MF.ttl >0)
                 {
                     String[] neighbours=temp.split(",");
 
@@ -135,7 +135,7 @@ class Download extends Thread
                         int neighbouringpeer=Integer.parseInt(neighbours[i]);
 
                         System.out.println("sending to "+neighbouringpeer);
-                        LeafNode cp=new LeafNode(connectingport,neighbouringpeer,fname,MF.msgId,peer_id,MF.TTL_value--);
+                        LeafNode cp=new LeafNode(connectingport,neighbouringpeer,fname,MF.message_ID,peer_id,MF.ttl--);
                         Thread t=new Thread(cp);
                         t.start();
                         thread.add(t);

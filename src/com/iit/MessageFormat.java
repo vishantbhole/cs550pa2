@@ -3,9 +3,9 @@ package com.iit;
 import java.io.Serializable;
 
 public class MessageFormat implements Serializable {
-
-    String fname;
-    String msgId;
+    String message_ID;
+    int ttl;
+    String file_name;
     int fromPeerId;
-    int TTL_value;
+
 }

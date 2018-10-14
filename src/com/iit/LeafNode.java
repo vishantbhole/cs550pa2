@@ -36,10 +36,10 @@ public class LeafNode extends Thread {
             ObjectOutputStream oos=new ObjectOutputStream(os);
             InputStream is=socket.getInputStream();
             ObjectInputStream ois=new ObjectInputStream(is);
-            MF.fname=filetodownload;							//writing the data to be serialized and send to the server thread
-            MF.msgId=msgid;
+            MF.file_name =filetodownload;							//writing the data to be serialized and send to the server thread
+            MF.message_ID =msgid;
             MF.fromPeerId=frompeer_id;
-            MF.TTL_value=TTL_value;
+            MF.ttl =TTL_value;
             oos.writeObject(MF);
 
             peersArray=(int[])ois.readObject();
