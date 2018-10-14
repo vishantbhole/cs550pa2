@@ -5,6 +5,60 @@ import java.util.Properties;
 import java.io.*;
 import java.util.*;
 
+class LeafNode extends Thread {
+
+    int portofconnection;
+    int peertoconnect;
+    String filetodownload;
+    Socket socket=null;
+    int[] peersArray;
+    MessageFormat MF=new MessageFormat();
+    String msgid;
+    int frompeer_id;
+    int TTL_value;
+
+    public LeafNode(int portofconnection, int peertoconnect, String filetodownload, String msgid, int frompeer_id, int TTL_value)
+    {
+        this.portofconnection=portofconnection;
+        this.peertoconnect=peertoconnect;
+        this.filetodownload=filetodownload;
+        this.msgid=msgid;
+        this.frompeer_id=frompeer_id;
+        this.TTL_value=TTL_value;
+    }
+
+    public void run()
+    {
+        try{
+            socket=new Socket("localhost",portofconnection);
+            OutputStream os=socket.getOutputStream();
+            ObjectOutputStream oos=new ObjectOutputStream(os);
+            InputStream is=socket.getInputStream();
+            ObjectInputStream ois=new ObjectInputStream(is);
+            MF.file_name =filetodownload;
+            MF.message_ID =msgid;
+            MF.fromPeerId=frompeer_id;
+            MF.ttl =TTL_value;
+            oos.writeObject(MF);
+
+            peersArray=(int[])ois.readObject();
+        }
+        catch(IOException io)
+        {
+            io.printStackTrace();
+        }
+        catch(ClassNotFoundException cp)
+        {
+            cp.printStackTrace();
+        }
+    }
+
+    public int[] getarray()
+    {
+        return peersArray;
+    }
+}
+
 class FileDownloader extends Thread {
 
     int portno;
@@ -55,7 +109,7 @@ class DownloadProgress extends Thread {
             ObjectOutputStream oos = new ObjectOutputStream(os);
             filename = (String) ois.readObject();
             String FileLocation;
-            if (filename.startsWith("Invalied File")) {
+            if (filename.startsWith("Invalid File")) {
                 System.out.println(filename + "  Modified by server...");
             } else {
                 while (true) {
@@ -94,10 +148,9 @@ public class Main {
 
             int peer_id = Integer.parseInt(args[1]);
             sharedDir = args[2];
-            System.out.println("Leafnode " + peer_id + " stated with private storage " + sharedDir);
+            System.out.println("Super-peer " + peer_id + " stated with private storage " + sharedDir + " Topology: " + fileName);
             Properties prop = new Properties();                        //Properties class to read the configuration file
             fileName = args[0];
-            System.out.println("Selected the " + fileName);
             InputStream is = new FileInputStream(fileName);
             prop.load(is);
             ports = Integer.parseInt(prop.getProperty("peer" + peer_id + ".serverport"));
@@ -107,7 +160,7 @@ public class Main {
             Superpeer cs = new Superpeer(portserver, sharedDir, peer_id);
             cs.start();
             System.out.println("Enter the filename to download a file");
-            String f_name = new Scanner(System.in).nextLine();
+            String filetodownload = new Scanner(System.in).nextLine();
             ++count;
             msgid = peer_id + "." + count;
             String[] neighbours = prop.getProperty("peer" + peer_id + ".next").split(",");
@@ -115,7 +168,7 @@ public class Main {
             for (int i = 0; i < neighbours.length; i++) {
                 int connectingport = Integer.parseInt(prop.getProperty("peer" + neighbours[i] + ".port"));
                 int neighbouringpeer = Integer.parseInt(neighbours[i]);
-                LeafNode cp = new LeafNode(connectingport, neighbouringpeer, f_name, msgid, peer_id, ttl);
+                LeafNode cp = new LeafNode(connectingport, neighbouringpeer, filetodownload, msgid, peer_id, ttl);
                 Thread t = new Thread(cp);
                 t.start();
                 thread.add(t);
@@ -125,7 +178,6 @@ public class Main {
                 try {
                     ((Thread) thread.get(i)).join();
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -144,8 +196,8 @@ public class Main {
             }
             System.out.println("\n Selecting leafnode: " + peerfromdownload + " To download file \n");
             int porttodownload = Integer.parseInt(prop.getProperty("peer" + peerfromdownload + ".serverport"));
-            ClientasServer(peerfromdownload, porttodownload, f_name, sharedDir);
-            System.out.println("File: " + f_name + " downloaded from Leafnode: " + peerfromdownload + " to Leafnode:" + peer_id);
+            ClientasServer(peerfromdownload, porttodownload, filetodownload, sharedDir);
+            System.out.println("File: " + filetodownload + " downloaded from Leafnode: " + peerfromdownload + " to Leafnode:" + peer_id);
         } catch (IOException io) {
             io.printStackTrace();
         }
