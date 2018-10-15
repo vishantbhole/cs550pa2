@@ -42,7 +42,6 @@ public class Superpeer extends Thread {
 class Download extends Thread {
     protected Socket socket;
     String FileDirectory;
-    int port;
     String fname;
     int peer_id;
     ArrayList<String> peermsg;
@@ -51,9 +50,6 @@ class Download extends Thread {
     int[] peersArray_list = new int[20];
     int[] a = new int[20];
     int countofpeers = 0;
-    int messageId;
-    int set = 0;
-    int TTL_value;
     MessageFormat MF = new MessageFormat();
 
     Download(Socket socket, String FileDirectory, int peer_id, ArrayList<String> peermsg) {
