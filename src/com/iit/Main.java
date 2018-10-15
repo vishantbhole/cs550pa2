@@ -7,36 +7,32 @@ import java.util.*;
 
 class LeafNode extends Thread {
 
-    int portofconnection;
-    int peertoconnect;
-    String filetodownload;
+    int leafNodePort, connectedSuperpeer, frompeerId, timeToLive;
+    String filetodownload, msgid;
     Socket socket = null;
     int[] peersArray;
     MessageFormat MF = new MessageFormat();
-    String msgid;
-    int frompeer_id;
-    int TTL_value;
 
-    public LeafNode(int portofconnection, int peertoconnect, String filetodownload, String msgid, int frompeer_id, int TTL_value) {
-        this.portofconnection = portofconnection;
-        this.peertoconnect = peertoconnect;
+    public LeafNode(int leafNodePort, int connectedSuperpeer, String filetodownload, String msgid, int frompeerId, int timeToLive) {
+        this.leafNodePort = leafNodePort;
+        this.connectedSuperpeer = connectedSuperpeer;
         this.filetodownload = filetodownload;
         this.msgid = msgid;
-        this.frompeer_id = frompeer_id;
-        this.TTL_value = TTL_value;
+        this.frompeerId = frompeerId;
+        this.timeToLive = timeToLive;
     }
 
     public void run() {
         try {
-            socket = new Socket("localhost", portofconnection);
+            socket = new Socket("localhost", leafNodePort);
             OutputStream os = socket.getOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(os);
             InputStream is = socket.getInputStream();
             ObjectInputStream ois = new ObjectInputStream(is);
             MF.file_name = filetodownload;
             MF.message_ID = msgid;
-            MF.fromPeerId = frompeer_id;
-            MF.ttl = TTL_value;
+            MF.fromPeerId = frompeerId;
+            MF.ttl = timeToLive;
             oos.writeObject(MF);
 
             peersArray = (int[]) ois.readObject();
@@ -76,9 +72,8 @@ class FileDownloader extends Thread {
 class FileSender extends Thread {
 
     int portno;
-    String sharedDirectory;
+    String sharedDirectory, filename;
     ServerSocket socket;
-    String filename;
 
     FileSender(ServerSocket socket, int portno, String FileDir) {
         this.socket = socket;
@@ -89,7 +84,7 @@ class FileSender extends Thread {
     public void run() {
         try {
             while (true) {
-                System.out.println("\n\n Waiting for new File download Request \n\n");
+                System.out.println("\n\n (N.B. In the background parallely Waiting for new File download Request) \n\n");
                 Socket sock = socket.accept();
                 InputStream is = sock.getInputStream();
                 ObjectInputStream ois = new ObjectInputStream(is);
@@ -115,12 +110,9 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            int ports;
-            int portserver;
+            int ports, portserver, ttl;
             int count = 0;
-            int ttl;
-            String msgid;
-            String sharedDir;
+            String msgid, sharedDir;
             ArrayList<Thread> thread = new ArrayList<Thread>();
             ArrayList<LeafNode> peers = new ArrayList<LeafNode>();
 
