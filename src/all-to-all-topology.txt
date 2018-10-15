@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 peer1.port=1024
 peer2.port=1025
 peer3.port=1026

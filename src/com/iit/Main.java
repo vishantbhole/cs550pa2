@@ -7,54 +7,43 @@ import java.util.*;
 
 class LeafNode extends Thread {
 
-    int portofconnection;
-    int peertoconnect;
-    String filetodownload;
-    Socket socket=null;
+    int leafNodePort, connectedSuperpeer, frompeerId, timeToLive;
+    String filetodownload, msgid;
+    Socket socket = null;
     int[] peersArray;
-    MessageFormat MF=new MessageFormat();
-    String msgid;
-    int frompeer_id;
-    int TTL_value;
+    MessageFormat MF = new MessageFormat();
 
-    public LeafNode(int portofconnection, int peertoconnect, String filetodownload, String msgid, int frompeer_id, int TTL_value)
-    {
-        this.portofconnection=portofconnection;
-        this.peertoconnect=peertoconnect;
-        this.filetodownload=filetodownload;
-        this.msgid=msgid;
-        this.frompeer_id=frompeer_id;
-        this.TTL_value=TTL_value;
+    public LeafNode(int leafNodePort, int connectedSuperpeer, String filetodownload, String msgid, int frompeerId, int timeToLive) {
+        this.leafNodePort = leafNodePort;
+        this.connectedSuperpeer = connectedSuperpeer;
+        this.filetodownload = filetodownload;
+        this.msgid = msgid;
+        this.frompeerId = frompeerId;
+        this.timeToLive = timeToLive;
     }
 
-    public void run()
-    {
-        try{
-            socket=new Socket("localhost",portofconnection);
-            OutputStream os=socket.getOutputStream();
-            ObjectOutputStream oos=new ObjectOutputStream(os);
-            InputStream is=socket.getInputStream();
-            ObjectInputStream ois=new ObjectInputStream(is);
-            MF.file_name =filetodownload;
-            MF.message_ID =msgid;
-            MF.fromPeerId=frompeer_id;
-            MF.ttl =TTL_value;
+    public void run() {
+        try {
+            socket = new Socket("localhost", leafNodePort);
+            OutputStream os = socket.getOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(os);
+            InputStream is = socket.getInputStream();
+            ObjectInputStream ois = new ObjectInputStream(is);
+            MF.file_name = filetodownload;
+            MF.message_ID = msgid;
+            MF.fromPeerId = frompeerId;
+            MF.ttl = timeToLive;
             oos.writeObject(MF);
 
-            peersArray=(int[])ois.readObject();
-        }
-        catch(IOException io)
-        {
+            peersArray = (int[]) ois.readObject();
+        } catch (IOException io) {
             io.printStackTrace();
-        }
-        catch(ClassNotFoundException cp)
-        {
+        } catch (ClassNotFoundException cp) {
             cp.printStackTrace();
         }
     }
 
-    public int[] getarray()
-    {
+    public int[] getarray() {
         return peersArray;
     }
 }
@@ -64,7 +53,6 @@ class FileDownloader extends Thread {
     int portno;
     String FileDirectory;
     ServerSocket serverSocket;
-    Socket socket;
 
     FileDownloader(int portno, String FileDirectory) {
         this.portno = portno;
@@ -77,24 +65,17 @@ class FileDownloader extends Thread {
         } catch (IOException io) {
             io.printStackTrace();
         }
-        try {
-            socket = serverSocket.accept();
-
-        } catch (IOException io) {
-            io.printStackTrace();
-        }
-        new DownloadProgress(socket, portno, FileDirectory).start();
+        new FileSender(serverSocket, portno, FileDirectory).start();
     }
 }
 
-class DownloadProgress extends Thread {
+class FileSender extends Thread {
 
     int portno;
-    String sharedDirectory;
-    Socket socket;
-    String filename;
+    String sharedDirectory, filename;
+    ServerSocket socket;
 
-    DownloadProgress(Socket socket, int portno, String FileDir) {
+    FileSender(ServerSocket socket, int portno, String FileDir) {
         this.socket = socket;
         this.portno = portno;
         this.sharedDirectory = FileDir;
@@ -102,30 +83,22 @@ class DownloadProgress extends Thread {
 
     public void run() {
         try {
-
-            InputStream is = socket.getInputStream();
-            ObjectInputStream ois = new ObjectInputStream(is);
-            OutputStream os = socket.getOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(os);
-            filename = (String) ois.readObject();
-            String FileLocation;
-            if (filename.startsWith("Invalid File")) {
-                System.out.println(filename + "  Modified by server...");
-            } else {
-                while (true) {
-                    File myFile = new File(sharedDirectory + "/" + filename);
-                    long length = myFile.length();
-                    byte[] mybytearray = new byte[(int) length];
-                    oos.writeObject((int) myFile.length());
-                    oos.flush();
-                    FileInputStream fileInSt = new FileInputStream(myFile);
-                    BufferedInputStream objBufInStream = new BufferedInputStream(fileInSt);
-                    objBufInStream.read(mybytearray, 0, (int) myFile.length());
-                    System.out.println("sending file of " + mybytearray.length + " bytes");
-                    oos.write(mybytearray, 0, mybytearray.length);
-                    oos.flush();
-                }
+            while (true) {
+                System.out.println("\n\n (N.B. In the background parallely Waiting for new File download Request) \n\n");
+                Socket sock = socket.accept();
+                InputStream is = sock.getInputStream();
+                ObjectInputStream ois = new ObjectInputStream(is);
+                filename = (String) ois.readObject();
+                File myFile = new File(sharedDirectory + "/" + filename);
+                byte[] mybytearray = new byte[(int) myFile.length()];
+                BufferedInputStream bis = new BufferedInputStream(new FileInputStream(myFile));
+                bis.read(mybytearray, 0, mybytearray.length);
+                OutputStream os = sock.getOutputStream();
+                os.write(mybytearray, 0, mybytearray.length);
+                os.flush();
+                sock.close();
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -137,20 +110,17 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            int ports;
-            int portserver;
+            int ports, portserver, ttl;
             int count = 0;
-            int ttl;
-            String msgid;
-            String sharedDir;
+            String msgid, sharedDir;
             ArrayList<Thread> thread = new ArrayList<Thread>();
             ArrayList<LeafNode> peers = new ArrayList<LeafNode>();
 
             int peer_id = Integer.parseInt(args[1]);
             sharedDir = args[2];
-            System.out.println("Super-peer " + peer_id + " stated with private storage " + sharedDir + " Topology: " + fileName);
-            Properties prop = new Properties();                        //Properties class to read the configuration file
+            Properties prop = new Properties();
             fileName = args[0];
+            System.out.println("Super-peer " + peer_id + " stated with private storage " + sharedDir + " Topology: " + fileName);
             InputStream is = new FileInputStream(fileName);
             prop.load(is);
             ports = Integer.parseInt(prop.getProperty("peer" + peer_id + ".serverport"));
@@ -181,7 +151,7 @@ public class Main {
                     e.printStackTrace();
                 }
             }
-            int[] peerswithfiles;//part on how to send data from the ConnectingPeer
+            int[] peerswithfiles;
 
             System.out.println("Leafnodes containing the file are: ");
             int peerfromdownload = 0;
@@ -196,42 +166,31 @@ public class Main {
             }
             System.out.println("\n Selecting leafnode: " + peerfromdownload + " To download file \n");
             int porttodownload = Integer.parseInt(prop.getProperty("peer" + peerfromdownload + ".serverport"));
-            ClientasServer(peerfromdownload, porttodownload, filetodownload, sharedDir);
+            StreamProcessor(peerfromdownload, porttodownload, filetodownload, sharedDir);
             System.out.println("File: " + filetodownload + " downloaded from Leafnode: " + peerfromdownload + " to Leafnode:" + peer_id);
         } catch (IOException io) {
             io.printStackTrace();
         }
     }
 
-    public static void ClientasServer(int cspeerid, int csportno, String filename, String sharedDir) {
+    public static void StreamProcessor(int cspeerid, int csportno, String filename, String sharedDir) {
         try {
-            Socket clientasserversocket = new Socket("localhost", csportno);
-            ObjectOutputStream ooos = new ObjectOutputStream(clientasserversocket.getOutputStream());
+              Socket clientsocket = new Socket("localhost", csportno);
+            ObjectOutputStream ooos = new ObjectOutputStream(clientsocket.getOutputStream());
             ooos.flush();
-            ObjectInputStream oois = new ObjectInputStream(clientasserversocket.getInputStream());
+
             ooos.writeObject(filename);
-            int readbytes = (int) oois.readObject();
-            System.out.println("bytes transferred: " + readbytes);
-            byte[] myByteArray = new byte[readbytes];
-            oois.readFully(myByteArray);
+
             String outputFile = sharedDir + "/" + filename;
+            byte[] mybytearray = new byte[1024];
+            InputStream is = clientsocket.getInputStream();
             FileOutputStream fos = new FileOutputStream(outputFile);
-            fos.write(myByteArray);
-            fos.close();
-
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            int bytesRead = is.read(mybytearray, 0, mybytearray.length);
+            bos.write(mybytearray, 0, bytesRead);
+            bos.close();
+            clientsocket.close();
             System.out.println(filename + " file is transferred to your private storage: " + sharedDir);
-            //myByteArray.flush();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void BroadcastInvaliedMsg(int cspeerid, int csportno, String filename) {
-        try {
-            Socket clientasserversocket = new Socket("localhost", csportno);
-            ObjectOutputStream ooos = new ObjectOutputStream(clientasserversocket.getOutputStream());
-            ooos.flush();
-            ooos.writeObject("Invalied File " + filename);
         } catch (Exception e) {
             e.printStackTrace();
         }

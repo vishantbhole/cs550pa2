@@ -1,0 +1,139 @@
+package com.iit;
+
+import java.net.*;
+import java.util.Properties;
+import java.io.*;
+import java.util.*;
+
+class LeafNode extends Thread {
+
+    int leafNodePort;
+    int connectedSuperpeer;
+    String filetodownload;
+    Socket socket=null;
+    int[] peersArray;
+    MessageFormat MF=new MessageFormat();
+    String msgid;
+    int frompeerId;
+    int timeToLive;
+
+    public LeafNode(int leafNodePort, int connectedSuperpeer, String filetodownload, String msgid, int frompeerId, int timeToLive)
+    {
+        this.leafNodePort=leafNodePort;
+        this.connectedSuperpeer=connectedSuperpeer;
+        this.filetodownload=filetodownload;
+        this.msgid=msgid;
+        this.frompeerId=frompeerId;
+        this.timeToLive=timeToLive;
+    }
+
+    public void run()
+    {
+        try{
+            socket=new Socket("localhost",leafNodePort);
+            OutputStream os=socket.getOutputStream();
+            ObjectOutputStream oos=new ObjectOutputStream(os);
+            InputStream is=socket.getInputStream();
+            ObjectInputStream ois=new ObjectInputStream(is);
+            MF.file_name =filetodownload;
+            MF.message_ID =msgid;
+            MF.fromPeerId=frompeerId;
+            MF.ttl =timeToLive;
+            oos.writeObject(MF);
+
+            peersArray=(int[])ois.readObject();
+        }
+        catch(IOException io)
+        {
+            io.printStackTrace();
+        }
+        catch(ClassNotFoundException cp)
+        {
+            cp.printStackTrace();
+        }
+    }
+
+    public int[] getarray()
+    {
+        return peersArray;
+    }
+}
+
+class FileDownloader extends Thread {
+
+    int portno;
+    String FileDirectory;
+    ServerSocket serverSocket;
+    Socket socket;
+
+    FileDownloader(int portno, String FileDirectory) {
+        this.portno = portno;
+        this.FileDirectory = FileDirectory;
+    }
+
+    public void run() {
+        try {
+            serverSocket = new ServerSocket(portno);
+        } catch (IOException io) {
+            io.printStackTrace();
+        }
+        try {
+            socket = serverSocket.accept();
+
+        } catch (IOException io) {
+            io.printStackTrace();
+        }
+        new DownloadProgress(socket, portno, FileDirectory).start();
+    }
+}
+
+class DownloadProgress extends Thread {
+
+    int portno;
+    String sharedDirectory;
+    Socket socket;
+    String filename;
+
+    DownloadProgress(Socket socket, int portno, String FileDir) {
+        this.socket = socket;
+        this.portno = portno;
+        this.sharedDirectory = FileDir;
+    }
+
+    public void run() {
+        try {
+
+            InputStream is = socket.getInputStream();
+            ObjectInputStream ois = new ObjectInputStream(is);
+            OutputStream os = socket.getOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(os);
+            filename = (String) ois.readObject();
+            String FileLocation;
+            if (filename.startsWith("Invalid File")) {
+                System.out.println(filename + "  Modified by server...");
+            } else {
+                int count = 0;
+                while (true) {
+
+                    File myFile = new File(sharedDirectory + "/" + filename);
+                    long length = 4028;
+                    byte[] mybytearray = new byte[(int) length];
+                    oos.writeObject(4028);
+                    oos.flush();
+                    FileInputStream fileInSt = new FileInputStream(myFile);
+                    BufferedInputStream objBufInStream = new BufferedInputStream(fileInSt);
+                    objBufInStream.read(mybytearray, 0, 4028);
+                    if(count > 135){
+                        System.out.println(" I am " + objBufInStream.available() );
+                    }
+                    System.out.println(count++ + "sending file of " + mybytearray.length + " bytes");
+                    oos.write(mybytearray, 0, mybytearray.length);
+                    oos.flush();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
