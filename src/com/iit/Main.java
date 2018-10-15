@@ -83,18 +83,18 @@ class FileDownloader extends Thread {
         } catch (IOException io) {
             io.printStackTrace();
         }
-        new DownloadProgress(socket, portno, FileDirectory).start();
+        new FileSender(socket, portno, FileDirectory).start();
     }
 }
 
-class DownloadProgress extends Thread {
+class FileSender extends Thread {
 
     int portno;
     String sharedDirectory;
     Socket socket;
     String filename;
 
-    DownloadProgress(Socket socket, int portno, String FileDir) {
+    FileSender(Socket socket, int portno, String FileDir) {
         this.socket = socket;
         this.portno = portno;
         this.sharedDirectory = FileDir;
@@ -112,16 +112,17 @@ class DownloadProgress extends Thread {
             if (filename.startsWith("Invalid File")) {
                 System.out.println(filename + "  Modified by server...");
             } else {
+                int count = 0;
+                File myFile = new File(sharedDirectory + "/" + filename);
+                FileInputStream fileInSt = new FileInputStream(myFile);
+                BufferedInputStream objBufInStream = new BufferedInputStream(fileInSt);
                 while (true) {
-                    File myFile = new File(sharedDirectory + "/" + filename);
                     long length = myFile.length();
                     byte[] mybytearray = new byte[(int) length];
                     oos.writeObject((int) myFile.length());
                     oos.flush();
-                    FileInputStream fileInSt = new FileInputStream(myFile);
-                    BufferedInputStream objBufInStream = new BufferedInputStream(fileInSt);
                     objBufInStream.read(mybytearray, 0, (int) myFile.length());
-                    System.out.println("sending file of " + mybytearray.length + " bytes");
+                    System.out.println(count++ + ". sending data of " + mybytearray.length + " bytes");
                     oos.write(mybytearray, 0, mybytearray.length);
                     oos.flush();
                 }
@@ -196,14 +197,14 @@ public class Main {
             }
             System.out.println("\n Selecting leafnode: " + peerfromdownload + " To download file \n");
             int porttodownload = Integer.parseInt(prop.getProperty("peer" + peerfromdownload + ".serverport"));
-            ClientasServer(peerfromdownload, porttodownload, filetodownload, sharedDir);
+            StreamProcessor(peerfromdownload, porttodownload, filetodownload, sharedDir);
             System.out.println("File: " + filetodownload + " downloaded from Leafnode: " + peerfromdownload + " to Leafnode:" + peer_id);
         } catch (IOException io) {
             io.printStackTrace();
         }
     }
 
-    public static void ClientasServer(int cspeerid, int csportno, String filename, String sharedDir) {
+    public static void StreamProcessor(int cspeerid, int csportno, String filename, String sharedDir) {
         try {
             Socket clientasserversocket = new Socket("localhost", csportno);
             ObjectOutputStream ooos = new ObjectOutputStream(clientasserversocket.getOutputStream());

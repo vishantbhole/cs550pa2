@@ -83,7 +83,7 @@ class Download extends Thread {
             }
 
             fname = MF.file_name;
-            System.out.println("queryhit: " + fname);
+
 
             if (!peerduplicate) {
                 File newfind;
@@ -92,6 +92,7 @@ class Download extends Thread {
                 for (int j = 0; j < filesList.length; j++) {
                     newfind = new File(filesList[j]);
                     if (newfind.getName().equals(fname)) {
+                        System.out.println("Found file . queryhit: " + fname);
                         peersArray_list[countofpeers++] = peer_id;
                         break;
                     }
