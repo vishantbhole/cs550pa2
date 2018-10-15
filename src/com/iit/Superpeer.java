@@ -30,7 +30,7 @@ public class Superpeer extends Thread {
             try {
                 socket = serverSocket.accept();
                 System.out.println("Superpeer: " + peer_id + ", started at " + socket.getRemoteSocketAddress());
-                new Download(socket, FileDir, peer_id, msg).start();
+                new CommunicateWithPeer(socket, FileDir, peer_id, msg).start();
             } catch (IOException io) {
                 io.printStackTrace();
             }
@@ -39,7 +39,7 @@ public class Superpeer extends Thread {
 }
 
 
-class Download extends Thread {
+class CommunicateWithPeer extends Thread {
     protected Socket socket;
     String FileDirectory;
     String fname;
@@ -52,7 +52,7 @@ class Download extends Thread {
     int countofpeers = 0;
     MessageFormat MF = new MessageFormat();
 
-    Download(Socket socket, String FileDirectory, int peer_id, ArrayList<String> peermsg) {
+    CommunicateWithPeer(Socket socket, String FileDirectory, int peer_id, ArrayList<String> peermsg) {
         this.socket = socket;
         this.FileDirectory = FileDirectory;
         this.peer_id = peer_id;
